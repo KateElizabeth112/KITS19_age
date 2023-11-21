@@ -7,7 +7,7 @@ local = False
 if local:
     root_dir = "/Users/katecevora/Documents/PhD/data/KITS19/"
 else:
-    root_folder = "/rds/general/user/kc2322/projects/cevora_phd/live/kits19"
+    root_dir = "/rds/general/user/kc2322/projects/cevora_phd/live/kits19"
 
 input_data_dir = os.path.join(root_dir, "data")
 output_data_dir = os.path.join(root_dir, "FullDataset", "imagesTr")
