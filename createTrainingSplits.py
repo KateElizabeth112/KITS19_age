@@ -20,103 +20,87 @@ splits_folder = os.path.join(root_folder, "splits")
 
 
 def generate_folds():
-    f = open(os.path.join(root_folder, "metadata.pkl"), "rb")
+    f = open(os.path.join(root_folder, "info.pkl"), "rb")
     info = pkl.load(f)
     f.close()
 
-    patients_full = np.array(info["id"])
-    genders_full = np.array(info["gender"])       # male = 0, female = 1
-    patients = []
-    genders = []
+    patients = np.array(info["id"])
+    age = np.array(info["age"])       # male = 0, female = 1
 
-    # We need to sort the files in the training folder into male and female ids
-    cases = os.listdir(input_images_folder)
-    for case in cases:
-        if case.endswith(".nii.gz"):
-            id = "case_0" + case[5:9]
-            sex = genders_full[np.where(patients_full == id)[0][0]]
-
-            patients.append(case[5:9])
-            genders.append(sex)
-
-    patients = np.array(patients)
-    genders = np.array(genders)
-
-    # split into male and female IDs
-    ids_m = patients[genders == 0]
-    ids_f = patients[genders == 1]
+    # split into group 1 and group 2
+    ids_g1 = patients[age <= 50]
+    ids_g2 = patients[age >= 70]
 
     # randomly shuffle indices
-    np.random.shuffle(ids_m)
-    np.random.shuffle(ids_f)
+    np.random.shuffle(ids_g1)
+    np.random.shuffle(ids_g2)
 
-    block_size = np.floor(ids_f.shape[0] / 9)
+    # Find the block size
+    block_size = np.floor(np.min([ids_g1.shape[0], ids_g2.shape[0]]) / 9)
     dataset_size = int(block_size * 8)
 
     print("Dataset size: {}".format(dataset_size))
     print("Test set size per fold: {}".format(block_size * 2))
-    print("Male ids: {}".format(ids_m.shape[0]))
-    print("Female ids: {}".format(ids_f.shape[0]))
 
     # create 9 training blocks overall (these will form 5 folds)
-    blocks_f = []
-    blocks_m = []
+    blocks_g1 = []
+    blocks_g2 = []
 
     for i in range(9):
-        blocks_f.append(ids_f[int(i * block_size):int((i + 1) * block_size)])
-        blocks_m.append(ids_m[int(i * block_size):int((i + 1) * block_size)])
+        blocks_g1.append(ids_g1[int(i * block_size):int((i + 1) * block_size)])
+        blocks_g2.append(ids_g2[int(i * block_size):int((i + 1) * block_size)])
 
     # create 5 training folds for three datasets
-    ts = np.concatenate((blocks_f[0], blocks_m[0]), axis=0)
-    tr1_f = np.concatenate(blocks_f[1:5], axis=0)
-    tr1_m = np.concatenate(blocks_m[1:5], axis=0)
-    tr1 = np.concatenate((tr1_f, tr1_m), axis=0)
+    ts = np.concatenate((blocks_g1[0], blocks_g2[0]), axis=0)
+    tr1_g1 = np.concatenate(blocks_g1[1:5], axis=0)
+    tr1_g2 = np.concatenate(blocks_g2[1:5], axis=0)
+    tr1 = np.concatenate((tr1_g1, tr1_g2), axis=0)
 
-    tr2 = np.concatenate(blocks_f[1:9], axis=0)
-    tr3 = np.concatenate(blocks_m[1:9], axis=0)
+    tr2 = np.concatenate(blocks_g1[1:9], axis=0)
+    tr3 = np.concatenate(blocks_g2[1:9], axis=0)
 
     set_1_ids = {"train": tr1, "test": ts}
     set_2_ids = {"train": tr2, "test": ts}
     set_3_ids = {"train": tr3, "test": ts}
 
-    f = open(os.path.join(splits_folder, "fold_0.pkl"), "wb")
+    f = open(os.path.join(splits_folder, "fold_0_age.pkl"), "wb")
     pkl.dump([set_1_ids, set_2_ids, set_3_ids], f)
     f.close()
 
     print(tr1.shape, tr2.shape, tr3.shape, ts.shape)
 
     for f in range(1, 4):
-        ts = np.concatenate((blocks_f[f], blocks_m[f]), axis=0)
-        tr1_f = np.concatenate((blocks_f[0:f] + blocks_f[f+1:5]), axis=0)
-        tr1_m = np.concatenate((blocks_m[0:f] + blocks_m[f+1:5]), axis=0)
-        tr1 = np.concatenate((tr1_f, tr1_m), axis=0)
+        ts = np.concatenate((blocks_g1[f], blocks_g2[f]), axis=0)
+        tr1_g1 = np.concatenate((blocks_g1[0:f] + blocks_g1[f + 1:5]), axis=0)
+        tr1_g2 = np.concatenate((blocks_g2[0:f] + blocks_g2[f + 1:5]), axis=0)
+        tr1 = np.concatenate((tr1_g1, tr1_g2), axis=0)
 
-        tr2 = np.concatenate((blocks_f[0:f] + blocks_f[f+1:9]), axis=0)
-        tr3 = np.concatenate((blocks_m[0:f] + blocks_m[f+1:9]), axis=0)
+        tr2 = np.concatenate((blocks_g1[0:f] + blocks_g1[f + 1:9]), axis=0)
+        tr3 = np.concatenate((blocks_g2[0:f] + blocks_g2[f + 1:9]), axis=0)
 
         set_1_ids = {"train": tr1, "test": ts}
         set_2_ids = {"train": tr2, "test": ts}
         set_3_ids = {"train": tr3, "test": ts}
 
-        f = open(os.path.join(splits_folder, "fold_{}.pkl".format(f)), "wb")
+        f = open(os.path.join(splits_folder, "fold_{}_age.pkl".format(f)), "wb")
         pkl.dump([set_1_ids, set_2_ids, set_3_ids], f)
         f.close()
 
         print(tr1.shape, tr2.shape, tr3.shape, ts.shape)
 
-    ts = np.concatenate((blocks_f[4], blocks_m[4]), axis=0)
-    tr1_f = np.concatenate(blocks_f[:4], axis=0)
-    tr1_m = np.concatenate(blocks_m[:4], axis=0)
-    tr1 = np.concatenate((tr1_f, tr1_m), axis=0)
+    ts = np.concatenate((blocks_g1[4], blocks_g2[4]), axis=0)
+    tr1_g1 = np.concatenate(blocks_g1[:4], axis=0)
+    tr1_g2 = np.concatenate(blocks_g2[:4], axis=0)
+    tr1 = np.concatenate((tr1_g1, tr1_g2), axis=0)
 
-    tr2 = np.concatenate((blocks_f[0:4] + blocks_f[5:9]), axis=0)
-    tr3 = np.concatenate((blocks_m[0:4] + blocks_m[5:9]), axis=0)
+    tr2 = np.concatenate((blocks_g1[0:4] + blocks_g1[5:9]), axis=0)
+    tr3 = np.concatenate((blocks_g2[0:4] + blocks_g2[5:9]), axis=0)
 
     set_1_ids = {"train": tr1, "test": ts}
     set_2_ids = {"train": tr2, "test": ts}
     set_3_ids = {"train": tr3, "test": ts}
 
-    f = open(os.path.join(splits_folder, "fold_4.pkl"), "wb")
+    f = open(os.path.join(splits_folder, "fold_4_age.pkl"), "wb")
     pkl.dump([set_1_ids, set_2_ids, set_3_ids], f)
     f.close()
 
@@ -178,14 +162,14 @@ def sort():
             ids_tr = ids[j]["train"]
             ids_ts = ids[j]["test"]
 
-            name = "Dataset{}0{}".format(5+fold, j) + "_Fold{}".format(fold)
+            name = "Dataset{}1{}".format(5+fold, j) + "_Age{}".format(fold)
 
             print("Working on Set {}....".format(name))
             copy_images(name, ids_tr, ids_ts)
 
 
 def main():
-    #generate_folds()
+    generate_folds()
     sort()
 
 if __name__ == "__main__":

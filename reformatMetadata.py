@@ -22,40 +22,60 @@ def reformatMetadata():
     # a dictionary
     data = json.load(f)
 
-    case_id = []
-    age = []
-    gender = []
-    bmi = []
+    case_id_all = []
+    age_all = []
+    gender_all = []
+    bmi_all = []
 
     cases = os.listdir(output_data_dir)
 
     for sub in data:
         id = sub["case_id"][6:]
         if "case_" + id + "_0000.nii.gz" in cases:
-            case_id.append(id)
-            age.append(sub["age_at_nephrectomy"])
-            gender.append(sub["gender"])
-            bmi.append(sub["body_mass_index"])
+            case_id_all.append(id)
+            age_all.append(sub["age_at_nephrectomy"])
+            gender_all.append(sub["gender"])
+            bmi_all.append(sub["body_mass_index"])
 
-    case_id = np.array(case_id)
-    age = np.array(age)
-    gender = np.array(gender)
-    bmi = np.array(bmi)
+    case_id_all = np.array(case_id_all)
+    age_all = np.array(age_all)
+    gender_all = np.array(gender_all)
+    bmi_all = np.array(bmi_all)
 
     # convert gender to binary indicator
-    gender_bin = np.zeros(gender.shape)
-    gender_bin[gender == "female"] = 1
+    gender_bin_all = np.zeros(gender_all.shape)
+    gender_bin_all[gender_all == "female"] = 1
 
-    print("Number of females: {}".format(np.sum(gender_bin)))
-    print("Number of males: {}".format(gender_bin.shape[0] - np.sum(gender_bin)))
+    print("Number of females: {}".format(np.sum(gender_bin_all)))
+    print("Number of males: {}".format(gender_bin_all.shape[0] - np.sum(gender_bin_all)))
+
+    # Now only save the examples in the input folder
+    case_id = []
+    age = []
+    sex = []
+    bmi = []
+
+    filenames = os.listdir(output_data_dir)
+
+    for fn in filenames:
+        if fn.endswith(".nii.gz"):
+            id = f[5:9]
+
+            if not (id in case_id_all):
+                print("subject {} not found in metadata".format(id))
+
+            case_id.append(id)
+            age.append(age_all[case_id_all == id][0])
+            sex.append(gender_bin_all[case_id_all == id][0])
+            bmi.append(bmi_all[case_id_all == id][0])
 
     metadata = {"id": case_id,
                 "age": age,
-                "gender": gender_bin,
+                "sex": sex,
                 "bmi": bmi}
 
     # save
-    f = open(os.path.join(root_dir, "metadata.pkl"), "wb")
+    f = open(os.path.join(root_dir, "info.pkl"), "wb")
     pkl.dump(metadata, f)
     f.close()
 
