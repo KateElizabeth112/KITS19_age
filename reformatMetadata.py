@@ -59,7 +59,7 @@ def reformatMetadata():
 
     for fn in filenames:
         if fn.endswith(".nii.gz"):
-            id = f[5:9]
+            id = fn[5:9]
 
             if not (id in case_id_all):
                 print("subject {} not found in metadata".format(id))
