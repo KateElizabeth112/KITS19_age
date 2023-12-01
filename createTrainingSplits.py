@@ -154,7 +154,7 @@ def sort():
     folds = [0, 1, 2, 3, 4]
 
     for fold in folds:
-        f = open(os.path.join(splits_folder, "fold_{}.pkl".format(fold)), "rb")
+        f = open(os.path.join(splits_folder, "fold_{}_age.pkl".format(fold)), "rb")
         ids = pkl.load(f)
         f.close()
 
