@@ -15,7 +15,7 @@ python -c "import torch;print(torch.cuda.is_available())"
 # Set environment variables
 ROOT_DIR='/rds/general/user/kc2322/projects/cevora_phd/live/kits19/'
 DATASET='Dataset511_Age0'
-TASK=510
+TASK=511
 
 export nnUNet_raw=$ROOT_DIR"nnUNet_raw"
 export nnUNet_preprocessed=$ROOT_DIR"nnUNet_preprocessed"
