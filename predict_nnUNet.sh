@@ -34,7 +34,7 @@ for number in {0..2}; do
     echo $INPUT_FOLDER
     echo $OUTPUT_FOLDER
 
-    nnUNetv2_predict -i $INPUT_FOLDER -o $OUTPUT_FOLDER -d $TASK -c 3d_fullres -f all -chk checkpoint_best.pth
+    #nnUNetv2_predict -i $INPUT_FOLDER -o $OUTPUT_FOLDER -d $TASK -c 3d_fullres -f all -chk checkpoint_best.pth
 
     # Run python script to evaluate results
     python3 processResults.py -d $DATASET

@@ -98,21 +98,22 @@ def calculateMetrics():
     info = pkl.load(f)
     f.close()
 
-    patients = np.array(info["id"])
-    genders = np.array(info["gender"])       # male = 0, female = 1
-    ages = np.array(info["age"])
+    ids_all = info["id"]
+    sex_all = info["sex"]  # male = 0, female = 1
+    age_all = info["age"]
 
     # containers to store results
     case_id = []
     sex = []
-    dice = []
+    dice_scores = []
     age = []
     hausdorff = []
-    vol_pred = []
-    vol_gt = []
+    vol_preds = []
+    vol_gts = []
 
-    cases = os.listdir(preds_dir)
-    for case in cases:
+    ids_pred = os.listdir(preds_dir)
+
+    for case in ids_pred:
         if case.endswith(".nii.gz"):
             id = case[5:9]
             print("Processing {}".format(id))
@@ -128,24 +129,25 @@ def calculateMetrics():
             hd = computeHDDIstance(pred, gt)
             vol_pred, vol_gt = getVolume(pred, gt)
 
-            if id in patients:
+            if id in ids_all:
                 case_id.append(id)
-                sex.append(genders[cases == id])
-                age.append(ages[case == id])
-                dice.append(dice)
-                hausdorff.append(hd)
-                vol_pred.append(vol_pred)
-                vol_gt.append(vol_gt)
+                sex.append(sex_all[ids_all == id])
+                age.append(age_all[ids_all == id])
+                dice_scores.append(dice)
+                hausdorff.append(hd.numpy().squeeze())
+                vol_preds.append(vol_pred)
+                vol_gts.append(vol_gt)
             else:
                 print("Not in list")
 
     # convert to numpy arrays (except for HD distance)
     case_id = np.array(case_id)
-    dice = np.array(dice)
+    dice_scores = np.array(dice_scores)
+    hausdorff = np.array(hausdorff)
     sex = np.array(sex)
     age = np.array(age)
-    vol_pred = np.array(vol_pred)
-    vol_gt = np.array(vol_gt)
+    vol_preds = np.array(vol_preds)
+    vol_gts = np.array(vol_gts)
 
     print("Number of men: {}".format(sex.shape[0] - np.sum(sex)))
     print("Number of women: {}".format(np.sum(sex)))
@@ -154,10 +156,10 @@ def calculateMetrics():
     pkl.dump({"case_id": case_id,
               "sex": sex,
               "age": age,
-              "dice": dice,
+              "dice": dice_scores,
               "hd": hausdorff,
-              "vol_pred": vol_pred,
-              "vol_gt": vol_gt,
+              "vol_pred": vol_preds,
+              "vol_gt": vol_gts,
               }, f)
     f.close()
 
