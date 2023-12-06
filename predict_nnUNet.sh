@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l walltime=10:00:00
 #PBS -l select=1:ncpus=15:mem=120gb:ngpus=1:gpu_type=RTX6000
-#PBS -N nnUNet_KITS_predict_610
+#PBS -N nnUNet_KITS_predict_710
 
 cd ${PBS_O_WORKDIR}
 
@@ -15,7 +15,7 @@ python -c "import torch;print(torch.cuda.is_available())"
 # Set environment variables
 ROOT_DIR='/rds/general/user/kc2322/projects/cevora_phd/live/kits19/'
 
-datasets=("Dataset610_Age1" "Dataset611_Age1" "Dataset612_Age1")
+datasets=("Dataset710_Age2" "Dataset711_Age2" "Dataset712_Age2")
 
 export nnUNet_raw=$ROOT_DIR"nnUNet_raw"
 export nnUNet_preprocessed=$ROOT_DIR"nnUNet_preprocessed"
