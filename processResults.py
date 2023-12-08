@@ -102,6 +102,8 @@ def calculateMetrics():
     sex_all = info["sex"]  # male = 0, female = 1
     age_all = info["age"]
 
+    print(sex_all)
+
     # containers to store results
     case_id = []
     sex = []
@@ -131,7 +133,9 @@ def calculateMetrics():
 
             if id in ids_all:
                 case_id.append(id)
+                print(sex_all[ids_all == id])
                 sex.append(sex_all[ids_all == id])
+                print(age_all[ids_all == id])
                 age.append(age_all[ids_all == id])
                 dice_scores.append(dice)
                 hausdorff.append(hd.numpy().squeeze())
