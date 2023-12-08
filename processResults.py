@@ -136,6 +136,7 @@ def calculateMetrics():
             if id in ids_all:
                 case_id.append(id)
                 print(sex_all[ids_all == id])
+                print(ids_all==id)
                 sex.append(sex_all[ids_all == id])
                 print(age_all[ids_all == id])
                 age.append(age_all[ids_all == id])
