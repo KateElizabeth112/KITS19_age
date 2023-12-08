@@ -103,6 +103,8 @@ def calculateMetrics():
     age_all = info["age"]
 
     print(sex_all)
+    print(age_all)
+    print(ids_all)
 
     # containers to store results
     case_id = []
